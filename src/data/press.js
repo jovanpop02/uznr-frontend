@@ -12,7 +12,7 @@ export const pressClippings = [
   },
   {
     title:
-      'Završene regionalne obuke na temu „Zaštita i zdravlje na radu u sistemu obrazovanja i vaspitanja',
+      'Završene regionalne obuke na temu „Zaštita i zdravlje na radu u sistemu obrazovanja i vaspitanja“',
     source: 'Vlada Crne Gore',
     date: '18.12.2025',
     thumb: '/press/1766058900ibhkiloaqovpgl90-i-747x498.jpg',

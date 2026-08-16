@@ -73,7 +73,7 @@ function formatSize(sizeKb) {
 
       <p>
         Na osnovu čl. 10 i čl. 11 Zakona o nevladinim organizacijama
-        („Sl. list RCG", br. 27/99), osnivači Udruženja zaštite na radu Crne
+        („Sl. list RCG“, br. 27/99), osnivači Udruženja zaštite na radu Crne
         Gore su na sjednici osnivačke skupštine u Podgorici, dana
         04.02.2000. godine, donijeli Odluku o osnivanju Udruženja zaštite
         na radu Crne Gore.

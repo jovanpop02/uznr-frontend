@@ -92,7 +92,7 @@ export default {
     addressTitle: 'Adresa',
     phoneEmailTitle: 'Telefon i e-mail',
     hoursTitle: 'Radno vrijeme',
-    hoursLine1: 'Ponedeljak – Petak',
+    hoursLine1: 'Ponedjeljak – Petak',
     hoursLine2: '8:00 – 16:00',
     followTitle: 'Pratite nas',
     followText: 'Novosti i aktivnosti Udruženja objavljujemo i na društvenim mrežama.',
@@ -147,7 +147,7 @@ export default {
     title: 'Pitanja & Odgovori',
     lead:
       'Najčešća pitanja iz oblasti zaštite i zdravlja na radu, sa odgovorima zasnovanim na Zakonu o zaštiti i zdravlju na radu i pratećim propisima.',
-    searchPlaceholder: 'Pretraži pitanja...',
+    searchPlaceholder: 'Pretraži pitanja…',
     noResults: 'Nema pitanja koja odgovaraju pretrazi.',
     ctaTitle: 'Niste pronašli odgovor?',
     ctaText:

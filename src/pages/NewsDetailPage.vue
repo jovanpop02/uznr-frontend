@@ -50,21 +50,40 @@ onMounted(() => load(route.params.slug))
 watch(() => route.params.slug, (slug) => load(slug))
 
 const bodyText = computed(() => item.value?.content || item.value?.excerpt || '')
-const paragraphs = computed(() => bodyText.value.split('\n').filter(Boolean))
 const isLongForm = computed(() => bodyText.value.length > LONGFORM_THRESHOLD)
+
+// The body is plain text, one paragraph per line, but articles imported from
+// the old site carry bulleted lines (schools visited, speakers, recommendations).
+// Rendered as ordinary paragraphs those read as a run of stray sentences, so
+// consecutive bullets are grouped into a single list block instead.
+const blocks = computed(() => {
+  const out = []
+  for (const line of bodyText.value.split('\n')) {
+    const text = line.trim()
+    if (!text) continue
+
+    const bullet = text.match(/^[•·*-]\s+(.*)$/)
+    if (bullet) {
+      const last = out[out.length - 1]
+      if (last?.type === 'list') last.items.push(bullet[1])
+      else out.push({ type: 'list', items: [bullet[1]] })
+    } else {
+      out.push({ type: 'text', text })
+    }
+  }
+  return out
+})
 
 const readingTime = computed(() => {
   const words = bodyText.value.trim().split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.round(words / 190))
 })
 
-// The first gallery image is pulled into the text flow as a wrapped figure
-// once an article is long enough to need visual breathing room.
-const pullImage = computed(() => (isLongForm.value && item.value?.images?.length ? item.value.images[0] : null))
-const gridImages = computed(() => {
-  if (!item.value?.images) return []
-  return pullImage.value ? item.value.images.slice(1) : item.value.images
-})
+// Every photo goes in the gallery below the text. Floating one into the middle
+// of the article was a magazine flourish that only read well on the short stubs
+// the page was first built against; with full-length articles it landed at a
+// different point in every piece and made the set look inconsistent.
+const gridImages = computed(() => item.value?.images ?? [])
 
 const lightboxPhotos = computed(() => {
   const arr = []
@@ -143,20 +162,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
         </button>
 
         <div class="news-detail__body" :class="{ 'news-detail__body--longform': isLongForm }">
-          <p v-if="paragraphs.length" class="news-detail__lead">{{ paragraphs[0] }}</p>
-
-          <figure v-if="pullImage" class="news-detail__pull-figure">
-            <button
-              type="button"
-              class="news-detail__image-btn"
-              @click="openLightboxFor(pullImage.image)"
-              :aria-label="t('newsDetail.openImageAriaLabel')"
-            >
-              <img :src="pullImage.image" :alt="`${item.title} — fotografija`" loading="lazy" />
-            </button>
-          </figure>
-
-          <p v-for="(paragraph, i) in paragraphs.slice(1)" :key="i">{{ paragraph }}</p>
+          <template v-for="(block, i) in blocks" :key="i">
+            <ul v-if="block.type === 'list'" class="news-detail__list">
+              <li v-for="(entry, j) in block.items" :key="j">{{ entry }}</li>
+            </ul>
+            <p v-else>{{ block.text }}</p>
+          </template>
         </div>
 
         <div v-if="gridImages.length" class="news-detail__gallery">
@@ -307,39 +318,29 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   line-height: 1.65;
 }
 
-.news-detail__lead {
+/* Every paragraph is set identically. The first line used to be given extra
+   size, weight and a darker ink as a longform accent, which worked while
+   almost every item was a two-line stub. Once the articles carried their full
+   text it applied to most of them, so the body read as two different colours
+   of text rather than as a deliberate lead. */
+
+/* Bulleted runs imported from the old site — school lists, speakers,
+   recommendations. Markers sit in the gutter so the text block keeps the same
+   left edge as the surrounding paragraphs. */
+.news-detail__list {
   margin: 0;
+  padding-left: 1.15em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
-/* Longform: a magazine-style pull image wraps the text, and the opening
-   line gets a touch more presence so a long report doesn't read as a wall
-   of paragraphs identical to a two-line update. */
-.news-detail__body--longform .news-detail__lead {
-  font-size: 1.14rem;
-  font-weight: 500;
-  color: var(--color-ink);
+.news-detail__list li {
+  padding-left: 0.15em;
 }
 
-.news-detail__pull-figure {
-  margin: 0 0 var(--space-3);
-  width: 100%;
-}
-
-@media (min-width: 700px) {
-  .news-detail__body--longform .news-detail__pull-figure {
-    float: right;
-    width: 45%;
-    margin: var(--space-1) 0 var(--space-3) var(--space-4);
-  }
-}
-
-.news-detail__pull-figure .news-detail__image-btn {
-  border-radius: var(--radius-sm);
-}
-
-.news-detail__pull-figure img {
-  width: 100%;
-  display: block;
+.news-detail__list li::marker {
+  color: var(--color-primary);
 }
 
 .news-detail__gallery {

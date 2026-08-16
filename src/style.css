@@ -66,10 +66,17 @@
 
 /* Firefox only. This must NOT be declared unconditionally: `scrollbar-width` /
    `scrollbar-color` inherit, and Chromium ignores every ::-webkit-scrollbar
-   rule on any element that has them set — which silently threw away the pill
-   design below. Firefox is the engine without ::-webkit-scrollbar support, so
-   gate on exactly that and let it use the standard properties instead. */
-@supports not selector(::-webkit-scrollbar) {
+   rule on any element that has them set — which silently throws away the pill
+   design below.
+
+   The gate has to be an engine test, not a feature test. `not
+   selector(::-webkit-scrollbar)` looks right but isn't: Firefox parses several
+   -webkit- pseudo-elements for site compatibility, so the check can report
+   support, the `not` flips to false, and Firefox ends up with neither the
+   standard properties nor the webkit rules — a default grey scrollbar with
+   square ends. `-moz-appearance` only ever parses in Gecko, so it selects the
+   one engine that needs this branch and can never leak into Chromium. */
+@supports (-moz-appearance: none) {
   :root {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) transparent;

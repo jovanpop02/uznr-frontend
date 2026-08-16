@@ -7,7 +7,7 @@ export default {
     addressHeading: 'Adresa',
     contactHeading: 'Kontakt',
     hoursHeading: 'Radno vrijeme',
-    hoursDays: 'Ponedeljak – Petak',
+    hoursDays: 'Ponedjeljak – Petak',
     blurb:
       'Udruženje zaštite na radu Crne Gore je organizacija lica (stručnjaka) obrazovana radi razvijanja aktivnosti na unapređivanju zaštite na radu i poboljšanja uslova rada i radne sredine.',
     copyrightSuffix: 'Sva prava zadržana.',

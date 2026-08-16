@@ -42,12 +42,30 @@ const filtered = computed(() =>
 
 // Instagram embeds have no intrinsic height and vary by post type — a carousel
 // runs ~180px taller than a single image. Each embed posts its measured height
-// to the parent window, so listen for that and size its frame exactly rather
-// than picking one height that clips the tall ones and pads the short ones.
+// to the parent window, so listen for that to find out how tall each one wants
+// to be.
 const FALLBACK_HEIGHT = 720
 const frames = ref([])
 const igSlider = ref(null)
-const heights = ref(posts.map(() => FALLBACK_HEIGHT))
+
+// Every slide shares one height, so the row reads as a set of equal cards
+// rather than a ragged line, and the tallest embed sets it: anything shorter
+// would crop the taller posts, and a cropped embed can't be scrolled to recover
+// what's cut (scrolling="no", and it's cross-origin).
+//
+// This is a high-water mark, not a max over the current measurements. Embeds
+// re-measure repeatedly as they settle and often report a SMALLER height the
+// second time — a carousel reports whichever slide is showing, and captions
+// collapse once the fonts land. Taking the live maximum meant the whole row
+// visibly shrank while you were looking at it. Holding the tallest value ever
+// seen means the cards only ever grow, and then stay put.
+//
+// The fallback is a guess for the pre-measurement paint, so it must not act as
+// the floor of that mark: if every post really is shorter than the guess, the
+// row would keep the guess forever and carry dead space. The first real
+// measurement therefore replaces it outright, and only later ones compete.
+const slideHeight = ref(FALLBACK_HEIGHT)
+let measured = false
 
 // Instagram's embeds ignore loading="lazy" — measured, they pulled ~13 MB over
 // 113 requests on first paint of this page, before anyone scrolled near them.
@@ -69,10 +87,15 @@ function onMessage(event) {
   }
   const height = data?.details?.height
   if (data?.type !== 'MEASURE' || !height) return
+  // Only accept a measurement from one of our own frames.
   const i = frames.value.findIndex((f) => f && f.contentWindow === event.source)
   if (i === -1) return
-  heights.value[i] = Math.ceil(height)
-  // Resizing a slide changes the track, so let the slider recheck its arrows.
+
+  const next = Math.ceil(height)
+  if (measured && next <= slideHeight.value) return
+  measured = true
+  slideHeight.value = next
+  // Resizing the slides changes the track, so let the slider recheck its arrows.
   nextTick(() => igSlider.value?.update())
 }
 
@@ -163,12 +186,12 @@ onBeforeUnmount(() => {
               :ref="(el) => (frames[i] = el)"
               :src="`https://www.instagram.com/p/${post.code}/embed/`"
               :title="`${t('press.instagramTitle')} — @uznr.me`"
-              :style="{ height: heights[i] + 'px' }"
+              :style="{ height: slideHeight + 'px' }"
               loading="lazy"
               scrolling="no"
               allowtransparency
             ></iframe>
-            <div v-else class="ig__placeholder" :style="{ height: heights[i] + 'px' }" aria-hidden="true"></div>
+            <div v-else class="ig__placeholder" :style="{ height: slideHeight + 'px' }" aria-hidden="true"></div>
           </li>
         </MediaSlider>
       </div>
@@ -398,7 +421,7 @@ onBeforeUnmount(() => {
 
 .ig__slider iframe {
   width: 100%;
-  /* Height is set inline from the embed's own MEASURE message; see the script. */
+  /* Height is set inline, one value shared by every slide; see the script. */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-card-bg);

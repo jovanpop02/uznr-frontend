@@ -73,7 +73,7 @@ export default {
     contactPersonTitle: 'Contact person',
     contactPersonInfo: 'Svetlana Milošević, Commission secretary',
     euOshaIntro:
-      'Healthy Workplaces Campaign 2023–2025: "Safe and Healthy Work in the Digital Age." The European Agency for Safety and Health at Work (EU-OSHA) leads a campaign dedicated to the challenges of digitalisation at work. Download the campaign materials below or visit the agency’s official website.',
+      'Healthy Workplaces Campaign 2023–2025: “Safe and Healthy Work in the Digital Age.” The European Agency for Safety and Health at Work (EU-OSHA) leads a campaign dedicated to the challenges of digitalisation at work. Download the campaign materials below or visit the agency’s official website.',
     euOshaVisitBtn: 'Visit EU-OSHA',
     euOshaCampaignTitle: 'Safe and Healthy Work in the Digital Age',
     euOshaStressTitle: 'Managing stress — materials in Montenegrin',
@@ -147,7 +147,7 @@ export default {
     title: 'Questions & Answers',
     lead:
       'Frequently asked questions on occupational safety and health, answered on the basis of the Law on Occupational Safety and Health and its accompanying regulations.',
-    searchPlaceholder: 'Search questions...',
+    searchPlaceholder: 'Search questions…',
     noResults: 'No questions match your search.',
     ctaTitle: "Didn't find your answer?",
     ctaText: 'Send us your question — we respond as soon as possible.',
