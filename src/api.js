@@ -1,11 +1,75 @@
+import { ref } from 'vue'
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-async function request(path) {
-  const res = await fetch(`${API_BASE}${path}`)
-  if (!res.ok) {
-    throw new Error(`API error ${res.status} on ${path}`)
+// The production API runs on Render's free tier, which spins the service down
+// after ~15 minutes idle. The first request after that has to wait out a cold
+// start — container boot, then `migrate`, then gunicorn — which can take the
+// better part of a minute.
+//
+// Two consequences this module handles:
+//
+//  1. A bare fetch() has no timeout, so a request that never lands leaves the
+//     caller stuck on `loading` forever and its error branch unreachable. Every
+//     request gets an abort signal so failure is always reachable.
+//  2. A wait that long looks identical to a broken site. `isWakingBackend` flips
+//     on once a request has been outstanding longer than SLOW_AFTER_MS, so the
+//     UI can explain what is happening instead of showing a frozen spinner.
+
+const TIMEOUT_MS = 45000
+const SLOW_AFTER_MS = 5000
+
+// True while at least one request has been in flight longer than SLOW_AFTER_MS.
+export const isWakingBackend = ref(false)
+
+let pendingSlow = 0
+
+function markSlow() {
+  pendingSlow += 1
+  isWakingBackend.value = true
+}
+
+function clearSlow() {
+  pendingSlow = Math.max(0, pendingSlow - 1)
+  if (pendingSlow === 0) isWakingBackend.value = false
+}
+
+export class ApiError extends Error {
+  constructor(message, { path, status = 0, timedOut = false } = {}) {
+    super(message)
+    this.name = 'ApiError'
+    this.path = path
+    this.status = status
+    this.timedOut = timedOut
   }
-  return res.json()
+}
+
+async function request(path) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+  let markedSlow = false
+  const slowTimer = setTimeout(() => {
+    markedSlow = true
+    markSlow()
+  }, SLOW_AFTER_MS)
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, { signal: controller.signal })
+    if (!res.ok) {
+      throw new ApiError(`API error ${res.status} on ${path}`, { path, status: res.status })
+    }
+    return await res.json()
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new ApiError(`Request to ${path} timed out`, { path, timedOut: true })
+    }
+    throw err instanceof ApiError ? err : new ApiError(err.message, { path })
+  } finally {
+    clearTimeout(timeout)
+    clearTimeout(slowTimer)
+    if (markedSlow) clearSlow()
+  }
 }
 
 export function fetchAnnouncements() {

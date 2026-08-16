@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/fetch-youtube.mjs && node scripts/fetch-instagram.mjs",
     "build": "vite build",
+    "refresh-instagram-token": "node scripts/refresh-instagram-token.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchAnnouncements } from '../api'
 import AnnouncementCard from '../components/AnnouncementCard.vue'
+import SkeletonBlock from '../components/SkeletonBlock.vue'
+import WakingNotice from '../components/WakingNotice.vue'
 import { splitExcerptForLink } from '../excerptLink'
 
 const { t } = useI18n()
@@ -13,7 +15,9 @@ const selected = ref(null)
 
 const selectedExcerptParts = computed(() => (selected.value ? splitExcerptForLink(selected.value.excerpt, selected.value) : []))
 
-onMounted(async () => {
+async function load() {
+  loading.value = true
+  error.value = null
   try {
     announcements.value = await fetchAnnouncements()
   } catch (e) {
@@ -21,7 +25,9 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('sr-Latn-ME', {
@@ -46,8 +52,14 @@ function closeDetail() {
     <div class="container">
       <h1>{{ t('ads.title') }}</h1>
 
-      <p v-if="loading" class="state-message">{{ t('ads.loading') }}</p>
-      <p v-else-if="error" class="state-message state-message--error">{{ t('ads.error') }}</p>
+      <template v-if="loading">
+        <SkeletonBlock variant="card" :count="3" />
+        <WakingNotice />
+      </template>
+      <div v-else-if="error" class="oglasi__error">
+        <p class="state-message state-message--error">{{ t('ads.error') }}</p>
+        <button type="button" class="btn btn--primary" @click="load">{{ t('common.retry') }}</button>
+      </div>
       <p v-else-if="!announcements.length" class="state-message">{{ t('ads.empty') }}</p>
       <template v-else>
         <AnnouncementCard :item="announcements[0]" featured class="oglasi__featured" @open="openDetail" />
@@ -135,6 +147,13 @@ function closeDetail() {
 </template>
 
 <style scoped>
+.oglasi__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .oglasi__featured {
   margin-top: var(--space-4);
 }

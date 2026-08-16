@@ -69,9 +69,18 @@ export default {
     altTeam: 'Ilustracija: tim zaštite na radu',
   },
   youtube: {
-    label: 'UZNR na videu',
-    title: 'Najnovije sa našeg YouTube kanala',
+    title: 'YouTube kanal',
+    lead: 'Pratite gostovanja na TV stanicama koja objavljujemo na našem zvaničnom YouTube kanalu.',
+    channelName: 'Udruženje zaštite na radu Crne Gore (SWAM)',
+    channelHandle: 'Zvanični YouTube kanal',
+    subscribe: 'Pretplati se',
+    moreVideos: 'Ostali video snimci',
+    playVideo: 'Pusti video',
     iframeTitle: 'Najnoviji video — UZNR Crna Gora',
-    visitChannel: 'Posjeti naš YouTube kanal →',
+    visitChannel: 'Pogledaj sve video snimke',
+  },
+  slider: {
+    prev: 'Prethodno',
+    next: 'Sljedeće',
   },
 }

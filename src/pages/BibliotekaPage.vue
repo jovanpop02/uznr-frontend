@@ -336,11 +336,6 @@ onBeforeUnmount(() => {
   max-width: var(--container-width);
   margin-inline: auto;
   padding: var(--space-3) var(--space-4);
-  scrollbar-width: none;
-}
-
-.biblioteka-nav__inner::-webkit-scrollbar {
-  display: none;
 }
 
 .biblioteka-nav__link {
@@ -385,6 +380,15 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
+}
+
+/* Grid items default to min-width:auto, so a wide child (a long document title
+   or the action button) stops the 1fr column shrinking and pushes the whole
+   grid past the viewport — visible as horizontal page scroll around 768px. */
+.doc-grid > *,
+.info-grid > *,
+.media-grid > * {
+  min-width: 0;
 }
 
 .table-wrap {

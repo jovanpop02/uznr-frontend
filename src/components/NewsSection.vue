@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchNews } from '../api'
 import NewsCard from './NewsCard.vue'
+import SkeletonBlock from './SkeletonBlock.vue'
+import WakingNotice from './WakingNotice.vue'
 
 const { t } = useI18n()
 const HOMEPAGE_LIMIT = 7
@@ -15,7 +17,9 @@ const visibleNews = computed(() => news.value.slice(0, HOMEPAGE_LIMIT))
 const featuredNews = computed(() => visibleNews.value[0])
 const restNews = computed(() => visibleNews.value.slice(1))
 
-onMounted(async () => {
+async function load() {
+  loading.value = true
+  error.value = null
   try {
     news.value = await fetchNews()
   } catch (e) {
@@ -23,14 +27,25 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
 </script>
 
 <template>
   <div class="news">
     <h2 v-reveal class="news__title">{{ t('newsSection.title') }}<span class="news__title-mark"></span></h2>
-    <p v-if="loading" class="state-message">{{ t('newsSection.loading') }}</p>
-    <p v-else-if="error" class="state-message state-message--error">{{ t('newsSection.error') }}</p>
+    <template v-if="loading">
+      <SkeletonBlock variant="featured" />
+      <div class="news__skeleton-grid">
+        <SkeletonBlock variant="card" :count="3" />
+      </div>
+      <WakingNotice />
+    </template>
+    <div v-else-if="error" class="news__error">
+      <p class="state-message state-message--error">{{ t('newsSection.error') }}</p>
+      <button type="button" class="btn btn--primary" @click="load">{{ t('common.retry') }}</button>
+    </div>
     <p v-else-if="!news.length" class="state-message">{{ t('newsSection.empty') }}</p>
     <template v-else>
       <div v-reveal class="news__featured">
@@ -64,6 +79,17 @@ onMounted(async () => {
   margin-bottom: var(--space-4);
 }
 
+.news__skeleton-grid {
+  margin-top: var(--space-4);
+}
+
+.news__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .news__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -89,14 +115,9 @@ onMounted(async () => {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
     margin-inline: calc(var(--space-4) * -1);
     padding-inline: var(--space-4);
     padding-bottom: var(--space-2);
-  }
-
-  .news__grid::-webkit-scrollbar {
-    display: none;
   }
 
   .news__grid > * {

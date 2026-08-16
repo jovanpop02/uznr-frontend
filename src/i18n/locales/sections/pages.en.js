@@ -144,10 +144,13 @@ export default {
   },
 
   qa: {
-    label: 'UZNR',
     title: 'Questions & Answers',
     lead:
-      'We are preparing a database of frequently asked questions in the field of occupational safety and health. Until then, feel free to send your question directly to our team — we respond as soon as possible.',
+      'Frequently asked questions on occupational safety and health, answered on the basis of the Law on Occupational Safety and Health and its accompanying regulations.',
+    searchPlaceholder: 'Search questions...',
+    noResults: 'No questions match your search.',
+    ctaTitle: "Didn't find your answer?",
+    ctaText: 'Send us your question — we respond as soon as possible.',
     askBtn: 'Ask a question',
   },
 
@@ -158,10 +161,19 @@ export default {
   },
 
   press: {
-    label: 'UZNR',
     title: 'Press/Media',
-    leadBefore: 'Media releases and press materials will be available here soon. For media inquiries and cooperation, contact us at',
+    leadBefore: 'Appearances, statements, and coverage of the Association in national and regional media. For media inquiries and cooperation, contact us at',
     leadAfter: ', and follow our latest activities on our social media.',
+    instagramTitle: 'Instagram',
+    instagramText: 'Follow the Association’s activities on our Instagram account.',
+    instagramBtn: 'Open Instagram',
+    instagramOrg: 'Occupational Safety Association of Montenegro',
+    portalsTitle: 'In the media',
+    portalsText: 'Coverage of the Association’s work across news portals and print media.',
+    latest: 'Latest',
+    filterAll: 'All',
+    filterLabel: 'Filter by year',
+    readAtSource: 'Read at the source',
   },
 
   projects: {

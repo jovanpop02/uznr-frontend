@@ -21,4 +21,8 @@ export default {
     switchLanguage: 'Switch language / Promijeni jezik',
     contact: 'Contact',
   },
+  common: {
+    retry: 'Try again',
+    wakingBackend: 'The server is waking up — this can take up to a minute.',
+  },
 }

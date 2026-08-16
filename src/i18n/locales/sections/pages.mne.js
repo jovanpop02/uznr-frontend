@@ -144,10 +144,14 @@ export default {
   },
 
   qa: {
-    label: 'UZNR',
     title: 'Pitanja & Odgovori',
     lead:
-      'Pripremamo bazu najčešćih pitanja iz oblasti zaštite i zdravlja na radu. Do tada, svoje pitanje možete poslati direktno našem timu — odgovaramo u najkraćem mogućem roku.',
+      'Najčešća pitanja iz oblasti zaštite i zdravlja na radu, sa odgovorima zasnovanim na Zakonu o zaštiti i zdravlju na radu i pratećim propisima.',
+    searchPlaceholder: 'Pretraži pitanja...',
+    noResults: 'Nema pitanja koja odgovaraju pretrazi.',
+    ctaTitle: 'Niste pronašli odgovor?',
+    ctaText:
+      'Pošaljite nam svoje pitanje — odgovaramo u najkraćem mogućem roku.',
     askBtn: 'Postavite pitanje',
   },
 
@@ -158,10 +162,19 @@ export default {
   },
 
   press: {
-    label: 'UZNR',
     title: 'Press/Media',
-    leadBefore: 'Objave iz medija i medijski materijali biće dostupni ovdje uskoro. Za medijske upite i saradnju kontaktirajte nas na',
+    leadBefore: 'Gostovanja, saopštenja i objave o radu Udruženja u domaćim i regionalnim medijima. Za medijske upite i saradnju kontaktirajte nas na',
     leadAfter: ', a najnovije aktivnosti pratite na našim društvenim mrežama.',
+    instagramTitle: 'Instagram',
+    instagramText: 'Pratite aktivnosti Udruženja na našem Instagram nalogu.',
+    instagramBtn: 'Otvori Instagram',
+    instagramOrg: 'Udruženje zaštite na radu Crne Gore',
+    portalsTitle: 'Portali',
+    portalsText: 'Objave o radu Udruženja na informativnim portalima i u štampanim medijima.',
+    latest: 'Najnovije',
+    filterAll: 'Sve',
+    filterLabel: 'Filtriraj po godini',
+    readAtSource: 'Pročitaj na izvoru',
   },
 
   projects: {

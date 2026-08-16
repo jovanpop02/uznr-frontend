@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { fetchNewsItem } from '../api'
 import SafetyIllustration from '../components/SafetyIllustration.vue'
+import SkeletonBlock from '../components/SkeletonBlock.vue'
+import WakingNotice from '../components/WakingNotice.vue'
 
 const LONGFORM_THRESHOLD = 900
 
@@ -32,7 +34,9 @@ async function load(slug) {
   try {
     item.value = await fetchNewsItem(slug)
   } catch (e) {
-    if (String(e.message).includes('404')) {
+    // Match on the status now that the API layer reports one — the old
+    // substring check on the message also fired for any slug containing "404".
+    if (e.status === 404) {
       notFound.value = true
     } else {
       error.value = e.message
@@ -104,7 +108,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
     <div class="container news-detail__inner" :class="{ 'news-detail__inner--wide': isLongForm && item }">
       <router-link class="news-detail__back" to="/arhiva">{{ t('newsDetail.back') }}</router-link>
 
-      <p v-if="loading" class="state-message">{{ t('newsDetail.loading') }}</p>
+      <template v-if="loading">
+        <SkeletonBlock variant="featured" />
+        <WakingNotice />
+      </template>
 
       <div v-else-if="notFound" class="news-detail__empty">
         <SafetyIllustration variant="not-found" class="news-detail__empty-illustration" />
@@ -113,7 +120,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
         <router-link class="btn btn--primary" to="/arhiva">{{ t('newsDetail.backBtn') }}</router-link>
       </div>
 
-      <p v-else-if="error" class="state-message state-message--error">{{ t('newsDetail.error') }}</p>
+      <div v-else-if="error" class="news-detail__error">
+        <p class="state-message state-message--error">{{ t('newsDetail.error') }}</p>
+        <button type="button" class="btn btn--primary" @click="load(route.params.slug)">{{ t('common.retry') }}</button>
+      </div>
 
       <template v-else-if="item">
         <div class="news-detail__meta">
@@ -205,6 +215,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
+.news-detail__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .news-detail__inner {
   max-width: 700px;
   transition: max-width 0.2s ease;

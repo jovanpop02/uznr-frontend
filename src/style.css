@@ -32,6 +32,15 @@
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --container-width: 1180px;
 
+  /* Scrollbars. One design everywhere: a slim brand-green pill on no track at
+     all. The thumb sits inside a transparent border so it floats clear of the
+     container edge instead of filling the full gutter. Deliberately not
+     overridable per-container — every scrollbar on the site is this one. */
+  --scrollbar-size: 10px;
+  --scrollbar-inset: 2px;
+  --scrollbar-thumb: var(--color-primary);
+  --scrollbar-thumb-hover: var(--color-primary-dark);
+
   color-scheme: light;
   font-family: var(--font-sans);
   font-size: 17px;
@@ -49,6 +58,50 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------
+   Scrollbars
+   --------------------------------------------------------------- */
+
+/* Firefox only. This must NOT be declared unconditionally: `scrollbar-width` /
+   `scrollbar-color` inherit, and Chromium ignores every ::-webkit-scrollbar
+   rule on any element that has them set — which silently threw away the pill
+   design below. Firefox is the engine without ::-webkit-scrollbar support, so
+   gate on exactly that and let it use the standard properties instead. */
+@supports not selector(::-webkit-scrollbar) {
+  :root {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+/* WebKit/Blink. These pseudo-elements don't inherit, so they're declared
+   unscoped and apply to the page and every scroll container alike. */
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+/* No trough: the pill floats on the page rather than sitting in a channel. */
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  /* Transparent border + padding-box clip is what slims the pill and keeps it
+     off the container edge. Colour must be reapplied on hover alongside the
+     clip, or the border area repaints opaque. */
+  border: var(--scrollbar-inset) solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
 }
 
 body {

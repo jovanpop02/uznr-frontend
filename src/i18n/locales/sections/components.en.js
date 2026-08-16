@@ -69,9 +69,18 @@ export default {
     altTeam: 'Illustration: occupational safety team',
   },
   youtube: {
-    label: 'UZNR on video',
-    title: 'Latest from our YouTube channel',
+    title: 'YouTube channel',
+    lead: 'Watch our appearances on national TV, published on our official YouTube channel.',
+    channelName: 'Occupational Safety Association of Montenegro (SWAM)',
+    channelHandle: 'Official YouTube channel',
+    subscribe: 'Subscribe',
+    moreVideos: 'More videos',
+    playVideo: 'Play video',
     iframeTitle: 'Latest video — UZNR Montenegro',
-    visitChannel: 'Visit our YouTube channel →',
+    visitChannel: 'Browse all videos',
+  },
+  slider: {
+    prev: 'Previous',
+    next: 'Next',
   },
 }

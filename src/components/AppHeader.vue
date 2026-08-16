@@ -36,9 +36,10 @@ onBeforeUnmount(() => {
   phoneMq?.removeEventListener('change', syncIsPhone)
 })
 
-function toggleLocale() {
-  setLocale(locale.value === 'mne' ? 'en' : 'mne')
-}
+const localeOptions = [
+  { value: 'mne', label: 'ME' },
+  { value: 'en', label: 'EN' },
+]
 
 const navLinks = computed(() => [
   { label: t('nav.home'), to: '/' },
@@ -86,17 +87,23 @@ function submitSearch(q) {
            phones that folds into the menu below. -->
       <div class="site-header__utils">
         <HeaderSearch v-if="!isPhone" @submit="submitSearch" />
-        <button
-          type="button"
-          class="site-header__lang"
-          @click="toggleLocale"
-          :aria-label="t('header.switchLanguage')"
-        >
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9z"/></svg>
-          <span class="site-header__lang-option" :class="{ 'is-active': locale === 'mne' }">ME</span>
-          <span class="site-header__lang-divider">/</span>
-          <span class="site-header__lang-option" :class="{ 'is-active': locale === 'en' }">EN</span>
-        </button>
+        <!-- Segmented control rather than a single toggle: both languages are
+             visible and directly selectable, so nobody has to click to find out
+             which one they land on. -->
+        <div class="lang" role="group" :aria-label="t('header.switchLanguage')">
+          <span class="lang__indicator" :class="{ 'lang__indicator--end': locale === 'en' }" aria-hidden="true"></span>
+          <button
+            v-for="option in localeOptions"
+            :key="option.value"
+            type="button"
+            class="lang__option"
+            :class="{ 'lang__option--active': locale === option.value }"
+            :aria-pressed="locale === option.value"
+            @click="setLocale(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
       </div>
 
       <button
@@ -278,40 +285,67 @@ function submitSearch(q) {
   flex-shrink: 0;
 }
 
-.site-header__lang {
+.lang {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 5px;
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 3px;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
   background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.15s ease;
+}
+
+.lang:hover {
+  border-color: var(--color-primary);
+}
+
+/* The pill that slides between the two segments. It sits behind the labels and
+   is sized to half the control minus the padding on both sides. */
+.lang__indicator {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  height: calc(100% - 6px);
+  border-radius: 999px;
+  background: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(23, 33, 28, 0.18);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lang__indicator--end {
+  transform: translateX(100%);
+}
+
+.lang__option {
+  position: relative;
+  min-width: 38px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
   color: var(--color-text-muted);
+  font: inherit;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.4px;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: color 0.2s ease;
 }
 
-.site-header__lang:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.lang__option:hover:not(.lang__option--active) {
+  color: var(--color-primary-dark);
 }
 
-.site-header__lang-divider {
-  color: var(--color-border);
+.lang__option--active {
+  color: #fff;
 }
 
-.site-header__lang-option {
-  opacity: 0.5;
-  transition: opacity 0.15s ease, color 0.15s ease;
-}
-
-.site-header__lang-option.is-active {
-  opacity: 1;
-  color: var(--color-primary);
+@media (prefers-reduced-motion: reduce) {
+  .lang__indicator {
+    transition: none;
+  }
 }
 
 .site-header__cta {

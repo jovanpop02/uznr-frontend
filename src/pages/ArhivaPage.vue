@@ -6,6 +6,8 @@ import { fetchAnnouncements, fetchNews } from '../api'
 import { announcementsToSearchIndex, buildStaticSearchIndex } from '../search'
 import NewsCard from '../components/NewsCard.vue'
 import SafetyIllustration from '../components/SafetyIllustration.vue'
+import SkeletonBlock from '../components/SkeletonBlock.vue'
+import WakingNotice from '../components/WakingNotice.vue'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -49,7 +51,9 @@ function formatSize(sizeKb) {
   return `${sizeKb} KB`
 }
 
-onMounted(async () => {
+async function load() {
+  loading.value = true
+  error.value = null
   otherIndex.value = buildStaticSearchIndex()
   try {
     const [newsData, announcements] = await Promise.all([fetchNews(), fetchAnnouncements()])
@@ -60,7 +64,9 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
 </script>
 
 <template>
@@ -81,8 +87,14 @@ onMounted(async () => {
         </select>
       </div>
 
-      <p v-if="loading" class="state-message">{{ t('archive.loading') }}</p>
-      <p v-else-if="error" class="state-message state-message--error">{{ t('archive.error') }}</p>
+      <template v-if="loading">
+        <SkeletonBlock variant="card" :count="6" />
+        <WakingNotice />
+      </template>
+      <div v-else-if="error" class="arhiva__error">
+        <p class="state-message state-message--error">{{ t('archive.error') }}</p>
+        <button type="button" class="btn btn--primary" @click="load">{{ t('common.retry') }}</button>
+      </div>
       <div v-else-if="!filteredNews.length" class="arhiva__empty">
         <SafetyIllustration variant="empty-archive" class="arhiva__empty-illustration" />
         <p class="arhiva__empty-text">{{ t('archive.emptyText') }}</p>
@@ -114,6 +126,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.arhiva__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .arhiva__toolbar {
   display: flex;
   align-items: center;

@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchImportantLinks } from '../api'
+import SkeletonBlock from './SkeletonBlock.vue'
 
 const { t } = useI18n()
 const links = ref([])
@@ -26,7 +27,9 @@ onMounted(async () => {
     </h2>
     <p v-reveal="1" class="important-links__intro">{{ t('importantLinks.intro') }}</p>
 
-    <ul v-if="links.length" v-reveal="2" class="important-links__list">
+    <SkeletonBlock v-if="loading" variant="row" :count="4" />
+
+    <ul v-else-if="links.length" v-reveal="2" class="important-links__list">
       <li v-for="link in links" :key="link.title">
         <a
           class="important-links__item"
