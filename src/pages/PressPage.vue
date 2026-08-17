@@ -3,11 +3,26 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import YoutubeSection from '../components/YoutubeSection.vue'
 import MediaSlider from '../components/MediaSlider.vue'
-import { pressClippings } from '../data/press'
+import { pressClippings as bundledClippings } from '../data/press'
+import { text, usePageSections, withFallback } from '../cms'
 import { posts } from '../data/instagram'
 import logo from '../assets/uznr-logo.png'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Editable under Stranice → Press / Mediji.
+const sections = usePageSections('press')
+const pressClippings = withFallback(sections, bundledClippings, (cmsSections) =>
+  cmsSections.flatMap((section) =>
+    section.items.map((item) => ({
+      title: text(item.title, locale.value),
+      source: text(item.reference, locale.value),
+      date: item.date_label || '',
+      thumb: item.image || '',
+      href: item.href || '',
+    }))
+  )
+)
 
 const INSTAGRAM_URL = 'https://www.instagram.com/uznr.me/'
 const FACEBOOK_URL = 'https://www.facebook.com/uznr.me'
@@ -24,20 +39,24 @@ const socials = [
 // instead of being collected into a trailing bucket, which would have pushed the
 // newest coverage to the bottom of the page.
 // The newest clipping is pulled out as a full-width lead card.
-const lead = pressClippings[0]
-const rest = pressClippings.slice(1)
+const lead = computed(() => pressClippings.value[0])
+const rest = computed(() => pressClippings.value.slice(1))
 
 const yearOf = (item) => (item.date ? item.date.split('.').pop() : '')
 
 // Year headings left 1- and 2-card rows stranded in a 4-across grid. Filtering
 // instead keeps every row full, and matches how ArhivaPage already lets people
 // narrow by year.
-const years = computed(() => [...new Set(rest.map(yearOf).filter(Boolean))].sort((a, b) => b - a))
+const years = computed(() =>
+  [...new Set(rest.value.map(yearOf).filter(Boolean))].sort((a, b) => b - a)
+)
 
 const selectedYear = ref('all')
 
 const filtered = computed(() =>
-  selectedYear.value === 'all' ? rest : rest.filter((item) => yearOf(item) === selectedYear.value)
+  selectedYear.value === 'all'
+    ? rest.value
+    : rest.value.filter((item) => yearOf(item) === selectedYear.value)
 )
 
 // Instagram embeds have no intrinsic height and vary by post type — a carousel

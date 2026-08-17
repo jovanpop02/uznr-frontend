@@ -1,11 +1,19 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { publications } from '../data/publikacije'
+import { publications as bundledPublications } from '../data/publikacije'
+import { toDocument, usePageSections, withFallback } from '../cms'
 import { isIOS } from '../platform'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const previewDoc = ref(null)
+
+// Editable under Stranice → Publikacije in the admin; the bundled list is the
+// fallback while the backend wakes up or if it is unreachable.
+const sections = usePageSections('publikacije')
+const publications = withFallback(sections, bundledPublications, (cmsSections) =>
+  cmsSections.flatMap((section) => section.items.map((item) => toDocument(item, locale.value)))
+)
 
 function formatSize(sizeKb) {
   if (sizeKb >= 1024) return `${(sizeKb / 1024).toFixed(1)} MB`

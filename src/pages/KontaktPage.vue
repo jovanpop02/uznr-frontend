@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ContactForm from '../components/ContactForm.vue'
 
 const { t } = useI18n()
 
@@ -73,7 +74,18 @@ const socials = [
     </div>
   </section>
 
-  <section class="section kontakt-social">
+  <section class="section kontakt-form">
+    <div class="container">
+      <header class="kontakt-form__head">
+        <p class="section-label">{{ t('contact.form.label') }}</p>
+        <h2>{{ t('contact.form.title') }}</h2>
+        <p class="kontakt-form__lead">{{ t('contact.form.lead') }}</p>
+      </header>
+      <ContactForm />
+    </div>
+  </section>
+
+  <section class="section section--alt kontakt-social">
     <div class="container kontakt-social__inner">
       <div>
         <h2>{{ t('contact.followTitle') }}</h2>
@@ -159,6 +171,16 @@ const socials = [
 
 .kontakt-card__links a:hover {
   text-decoration: underline;
+}
+
+.kontakt-form__head {
+  max-width: 640px;
+  margin-bottom: var(--space-5);
+}
+
+.kontakt-form__lead {
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
 }
 
 .kontakt-social__inner {

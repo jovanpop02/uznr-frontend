@@ -3,16 +3,20 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { fetchNewsItem } from '../api'
+import { localizeItem } from '../cms'
 import SafetyIllustration from '../components/SafetyIllustration.vue'
 import SkeletonBlock from '../components/SkeletonBlock.vue'
 import WakingNotice from '../components/WakingNotice.vue'
 
 const LONGFORM_THRESHOLD = 900
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 
-const item = ref(null)
+const rawItem = ref(null)
+const item = computed(() =>
+  rawItem.value ? localizeItem(rawItem.value, locale.value) : null
+)
 const loading = ref(true)
 const notFound = ref(false)
 const error = ref(null)
@@ -32,7 +36,7 @@ async function load(slug) {
   error.value = null
   lightboxIndex.value = null
   try {
-    item.value = await fetchNewsItem(slug)
+    rawItem.value = await fetchNewsItem(slug)
   } catch (e) {
     // Match on the status now that the API layer reports one — the old
     // substring check on the message also fired for any slug containing "404".

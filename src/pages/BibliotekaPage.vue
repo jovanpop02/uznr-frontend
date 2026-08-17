@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DocumentCard from '../components/DocumentCard.vue'
+import { sectionsToShelves, usePageSections, withFallback } from '../cms'
 import euOshaLogo from '../assets/biblioteka/eu-osha-logo.svg'
 import ioshLogo from '../assets/biblioteka/iosh-logo.png'
 import euOshaPosterCover from '../assets/biblioteka/eu-osha-poster-cover.jpg'
@@ -12,7 +13,7 @@ import euOshaVodicMneCover from '../assets/biblioteka/eu-osha-vodic-mne-cover.jp
 import euOshaLeafletMneCover from '../assets/biblioteka/eu-osha-leaflet-mne-cover.jpg'
 import { isIOS } from '../platform'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const navLinks = [
   { id: 'strucni-ispit', labelKey: 'library.navExam' },
@@ -20,7 +21,18 @@ const navLinks = [
   { id: 'no-time-to-lose', label: 'No Time to Lose' },
 ]
 
-const strucniIspitDocs = [
+// Cover images ship with the frontend, so a document coming from the admin is
+// matched to its cover by path. One added later simply has no cover.
+const COVERS_BY_FILE = {
+  '/documents/biblioteka/eu-osha-poster.pdf': euOshaPosterCover,
+  '/documents/biblioteka/eu-osha-flyer.pdf': euOshaFlyerCover,
+  '/documents/biblioteka/eu-osha-kampanja.pdf': euOshaKampanjaCover,
+  '/documents/biblioteka/B3flajer-zdrava-radna-mjesta.pdf': euOshaFlajerMneCover,
+  '/documents/biblioteka/B5vodic-zdrava-radna-mjesta.pdf': euOshaVodicMneCover,
+  '/documents/biblioteka/B4leaflet-zdrava-radna-mjesta.pdf': euOshaLeafletMneCover,
+}
+
+const bundledStrucniIspitDocs = [
   {
     title: 'Pravilnik o polaganju stručnog ispita za lica koja se bave poslovima zaštite na radu',
     file: '/documents/biblioteka/strucni-ispit-pravilnik.pdf',
@@ -44,17 +56,34 @@ const formatRows = computed(() =>
 
 const troskovi = computed(() => Array.from({ length: 5 }, (_, i) => t(`library.troskovi${i + 1}`)))
 
-const euOshaMainDocs = [
+const bundledEuOshaMainDocs = [
   { title: 'Poster kampanje', file: '/documents/biblioteka/eu-osha-poster.pdf', sizeKb: 984, cover: euOshaPosterCover, kind: 'pdf' },
   { title: 'Flajer kampanje', file: '/documents/biblioteka/eu-osha-flyer.pdf', sizeKb: 437, cover: euOshaFlyerCover, kind: 'pdf' },
   { title: 'Vodič kroz kampanju', file: '/documents/biblioteka/eu-osha-kampanja.pdf', sizeKb: 617, cover: euOshaKampanjaCover, kind: 'pdf' },
 ]
 
-const euOshaStressDocs = [
+const bundledEuOshaStressDocs = [
   { title: 'Flajer — Upravljanje stresom', file: '/documents/biblioteka/B3flajer-zdrava-radna-mjesta.pdf', sizeKb: 2573, cover: euOshaFlajerMneCover, kind: 'pdf' },
   { title: 'Vodič — Upravljanje stresom', file: '/documents/biblioteka/B5vodic-zdrava-radna-mjesta.pdf', sizeKb: 53380, cover: euOshaVodicMneCover, kind: 'pdf' },
   { title: 'Letak — Upravljanje stresom', file: '/documents/biblioteka/B4leaflet-zdrava-radna-mjesta.pdf', sizeKb: 962, cover: euOshaLeafletMneCover, kind: 'pdf' },
 ]
+
+// Editable under Biblioteka in the admin. The three shelves are matched by
+// position, which is the order they are listed in there.
+const sections = usePageSections('biblioteka')
+const shelves = withFallback(
+  sections,
+  [
+    { heading: '', docs: bundledStrucniIspitDocs },
+    { heading: '', docs: bundledEuOshaMainDocs },
+    { heading: '', docs: bundledEuOshaStressDocs },
+  ],
+  (cmsSections) => sectionsToShelves(cmsSections, locale.value, COVERS_BY_FILE)
+)
+
+const strucniIspitDocs = computed(() => shelves.value[0]?.docs ?? [])
+const euOshaMainDocs = computed(() => shelves.value[1]?.docs ?? [])
+const euOshaStressDocs = computed(() => shelves.value[2]?.docs ?? [])
 
 const previewDoc = ref(null)
 const activeSection = ref(navLinks[0].id)

@@ -3,13 +3,14 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { fetchAnnouncements, fetchNews } from '../api'
+import { localizeList } from '../cms'
 import { announcementsToSearchIndex, buildStaticSearchIndex } from '../search'
 import NewsCard from '../components/NewsCard.vue'
 import SafetyIllustration from '../components/SafetyIllustration.vue'
 import SkeletonBlock from '../components/SkeletonBlock.vue'
 import WakingNotice from '../components/WakingNotice.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 
 const news = ref([])
@@ -57,8 +58,13 @@ async function load() {
   otherIndex.value = buildStaticSearchIndex()
   try {
     const [newsData, announcements] = await Promise.all([fetchNews(), fetchAnnouncements()])
-    news.value = newsData
-    otherIndex.value = [...otherIndex.value, ...announcementsToSearchIndex(announcements)]
+    // The archive searches over titles and excerpts, so it needs the text
+    // resolved to the language on screen rather than the `{ mne, en }` pair.
+    news.value = localizeList(newsData, locale.value)
+    otherIndex.value = [
+      ...otherIndex.value,
+      ...announcementsToSearchIndex(localizeList(announcements, locale.value)),
+    ]
   } catch (e) {
     error.value = e.message
   } finally {

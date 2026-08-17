@@ -1,19 +1,52 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { faqs } from '../data/pitanja'
+import { faqs as bundledFaqs } from '../data/pitanja'
+import { text, usePageSections, withFallback } from '../cms'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Editable under Stranice → Pitanja i odgovori. Answers are stored as plain
+// text; a blank line starts a new paragraph and a leading "- " makes a bullet,
+// which is what the admin help text tells staff.
+const sections = usePageSections('pitanja-odgovori')
+const faqs = withFallback(sections, bundledFaqs, (cmsSections) =>
+  cmsSections.flatMap((section) =>
+    section.items.map((item) => ({
+      id: `faq-${item.id}`,
+      question: text(item.title, locale.value),
+      answer: parseAnswer(text(item.description, locale.value)),
+    }))
+  )
+)
+
+function parseAnswer(body) {
+  return body
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) =>
+      block.startsWith('- ')
+        ? { type: 'list', value: block.split('\n').map((line) => line.replace(/^-\s*/, '')) }
+        : { type: 'text', value: block }
+    )
+}
 
 const searchText = ref('')
 // Start with the first answer open so the page never reads as a wall of
 // closed rows — visitors can see what an answer looks like before clicking.
-const openIds = ref(new Set([faqs[0].id]))
+const openIds = ref(new Set())
+
+// Which entry is first depends on the admin's ordering, so the default-open row
+// is resolved from the current list rather than captured once at setup.
+function isFirst(id) {
+  return faqs.value[0]?.id === id
+}
 
 const filtered = computed(() => {
   const q = searchText.value.trim().toLowerCase()
-  if (!q) return faqs
-  return faqs.filter((faq) => {
+  if (!q) return faqs.value
+  return faqs.value.filter((faq) => {
     if (faq.question.toLowerCase().includes(q)) return true
     return faq.answer.some((block) =>
       block.type === 'list'
@@ -26,14 +59,28 @@ const filtered = computed(() => {
 function isOpen(id) {
   // While searching, show every match expanded — hunting through collapsed
   // rows for the term you just typed defeats the point of the search.
-  return searchText.value.trim() ? true : openIds.value.has(id)
+  if (searchText.value.trim()) return true
+  if (openIds.value.has(id)) return true
+  return isFirst(id) && !closedIds.value.has(id)
 }
+
+// Tracked separately from openIds so the first row, which starts open without
+// ever being clicked, can also be closed by clicking it.
+const closedIds = ref(new Set())
 
 function toggle(id) {
   if (searchText.value.trim()) return
-  const next = new Set(openIds.value)
-  next.has(id) ? next.delete(id) : next.add(id)
-  openIds.value = next
+  const open = new Set(openIds.value)
+  const closed = new Set(closedIds.value)
+  if (isOpen(id)) {
+    open.delete(id)
+    closed.add(id)
+  } else {
+    open.add(id)
+    closed.delete(id)
+  }
+  openIds.value = open
+  closedIds.value = closed
 }
 </script>
 

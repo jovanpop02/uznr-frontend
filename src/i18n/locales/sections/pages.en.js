@@ -96,6 +96,41 @@ export default {
     hoursLine2: '8:00 AM – 4:00 PM',
     followTitle: 'Follow us',
     followText: 'We publish the Association’s news and activities on social media as well.',
+
+    form: {
+      label: 'Write to us',
+      title: 'Send a message',
+      lead: 'Fill in the form and we will get back to you within two working days.',
+      nameLabel: 'Full name',
+      namePlaceholder: 'Your first and last name',
+      emailLabel: 'E-mail address',
+      // A bare "@" is linked-message syntax in vue-i18n and fails to compile;
+      // wrapping the address in a literal keeps it as plain text.
+      emailPlaceholder: "{'name@example.com'}",
+      subjectLabel: 'Subject',
+      subjectPlaceholder: 'A short subject for your message',
+      messageLabel: 'Message',
+      messagePlaceholder: 'Briefly describe the reason for your enquiry…',
+      messageHint: 'At least 20 characters.',
+      consentLabel: 'I agree that UZNR may use this data solely to reply to my message.',
+      submit: 'Send message',
+      sending: 'Sending…',
+      privacyNote: 'We never share your data with third parties.',
+      successTitle: 'Message sent',
+      successText: 'Thank you for reaching out. We will reply to the address you provided as soon as possible.',
+      sendAnother: 'Send another message',
+      errorTitle: 'Sending failed',
+      errorText: "Something went wrong while sending. Please try again or e-mail us directly at {'info@uznr.me'}.",
+      throttledTitle: 'Too many messages',
+      throttledText: "We have received several messages from this device in a short time. Please try again later or e-mail us at {'info@uznr.me'}.",
+      errors: {
+        name: 'Please enter your full name.',
+        email: 'Please enter a valid e-mail address.',
+        subject: 'Please enter a subject.',
+        message: 'The message must be at least 20 characters long.',
+        consent: 'Your consent is required.',
+      },
+    },
   },
 
   newsDetail: {

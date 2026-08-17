@@ -1,26 +1,41 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { projects } from '../data/projekti'
+import { projects as bundledProjects } from '../data/projekti'
+import { sectionsToProjects, usePageSections, withFallback } from '../cms'
 import ppeIconsBanner from '../assets/projekti/ppe-icons-banner.jpg'
 import euFlag from '../assets/projekti/eu-flag.png'
 import mneCoatOfArms from '../assets/projekti/mne-coat-of-arms.jpg'
 import { isIOS } from '../platform'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Editable under Projekti in the admin; the bundled list renders immediately
+// and stands in if the backend is asleep or unreachable.
+const sections = usePageSections('projekti')
+const projects = withFallback(sections, bundledProjects, (cmsSections) =>
+  sectionsToProjects(cmsSections, locale.value)
+)
 
 const fundingBadge = computed(() => ({
   eu: { icon: euFlag, label: t('projects.fundingEu') },
   national: { icon: mneCoatOfArms, label: t('projects.fundingNational') },
 }))
 
-const openDocs = reactive(
-  Object.fromEntries(projects.map((p) => [p.key, p.docs.length > 0 && p.docs.length <= 3]))
-)
-const searchText = reactive(Object.fromEntries(projects.map((p) => [p.key, ''])))
+// Keyed by project, but filled in on demand rather than up front: the list now
+// arrives from the API, so the keys are not known when this runs.
+const openDocs = reactive({})
+const searchText = reactive({})
+
+function docsOpen(project) {
+  if (project.key in openDocs) return openDocs[project.key]
+  // A short list is more useful open than folded away.
+  return project.docs.length > 0 && project.docs.length <= 3
+}
 
 function toggleDocs(key) {
-  openDocs[key] = !openDocs[key]
+  const project = projects.value.find((p) => p.key === key)
+  openDocs[key] = !(project ? docsOpen(project) : false)
 }
 
 function filteredDocs(project) {
@@ -48,8 +63,10 @@ function closePreview() {
   previewDoc.value = null
 }
 
-const totalDocs = computed(() => projects.reduce((sum, p) => sum + p.docs.length, 0))
-const totalProjects = projects.length
+const totalDocs = computed(() =>
+  projects.value.reduce((sum, p) => sum + p.docs.length, 0)
+)
+const totalProjects = computed(() => projects.value.length)
 </script>
 
 <template>
@@ -163,7 +180,7 @@ const totalProjects = projects.length
             </span>
             <svg
               class="docs-toggle__chevron"
-              :class="{ 'docs-toggle__chevron--open': openDocs[project.key] }"
+              :class="{ 'docs-toggle__chevron--open': docsOpen(project) }"
               viewBox="0 0 24 24"
               width="18"
               height="18"
@@ -176,7 +193,7 @@ const totalProjects = projects.length
             </svg>
           </button>
 
-          <div v-show="openDocs[project.key]" class="docs-panel">
+          <div v-show="docsOpen(project)" class="docs-panel">
             <div v-if="project.docs.length > 8" class="docs-search">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.2" y2="16.2" stroke-linecap="round" /></svg>
               <input v-model="searchText[project.key]" type="search" :placeholder="t('projects.searchDocsPlaceholder')" :aria-label="t('projects.searchDocsAriaLabel', { title: project.title })" />

@@ -96,6 +96,41 @@ export default {
     hoursLine2: '8:00 – 16:00',
     followTitle: 'Pratite nas',
     followText: 'Novosti i aktivnosti Udruženja objavljujemo i na društvenim mrežama.',
+
+    form: {
+      label: 'Pišite nam',
+      title: 'Pošaljite poruku',
+      lead: 'Popunite formu i javićemo vam se najkasnije u roku od dva radna dana.',
+      nameLabel: 'Ime i prezime',
+      namePlaceholder: 'Vaše ime i prezime',
+      emailLabel: 'E-mail adresa',
+      // A bare "@" is linked-message syntax in vue-i18n and fails to compile;
+      // wrapping the address in a literal keeps it as plain text.
+      emailPlaceholder: "{'ime@primjer.me'}",
+      subjectLabel: 'Naslov',
+      subjectPlaceholder: 'Kratak naslov vaše poruke',
+      messageLabel: 'Poruka',
+      messagePlaceholder: 'Opišite ukratko razlog vašeg obraćanja…',
+      messageHint: 'Najmanje 20 karaktera.',
+      consentLabel: 'Saglasan/na sam da UZNR koristi ove podatke isključivo radi odgovora na moju poruku.',
+      submit: 'Pošalji poruku',
+      sending: 'Slanje…',
+      privacyNote: 'Podatke ne dijelimo sa trećim licima.',
+      successTitle: 'Poruka je poslata',
+      successText: 'Hvala vam na obraćanju. Odgovorićemo u najkraćem roku na adresu koju ste ostavili.',
+      sendAnother: 'Pošalji novu poruku',
+      errorTitle: 'Slanje nije uspjelo',
+      errorText: "Došlo je do greške pri slanju. Pokušajte ponovo ili nam pišite direktno na {'info@uznr.me'}.",
+      throttledTitle: 'Previše poruka',
+      throttledText: "Primili smo više poruka sa ovog uređaja u kratkom roku. Pokušajte kasnije ili nam pišite na {'info@uznr.me'}.",
+      errors: {
+        name: 'Unesite ime i prezime.',
+        email: 'Unesite ispravnu e-mail adresu.',
+        subject: 'Unesite naslov poruke.',
+        message: 'Poruka treba da ima najmanje 20 karaktera.',
+        consent: 'Potrebna je vaša saglasnost.',
+      },
+    },
   },
 
   newsDetail: {

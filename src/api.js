@@ -44,7 +44,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path) {
+async function request(path, { method = 'GET', body } = {}) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
@@ -55,11 +55,19 @@ async function request(path) {
   }, SLOW_AFTER_MS)
 
   try {
-    const res = await fetch(`${API_BASE}${path}`, { signal: controller.signal })
+    const res = await fetch(`${API_BASE}${path}`, {
+      method,
+      signal: controller.signal,
+      ...(body === undefined
+        ? {}
+        : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    })
     if (!res.ok) {
       throw new ApiError(`API error ${res.status} on ${path}`, { path, status: res.status })
     }
-    return await res.json()
+    // 204s and empty bodies are valid responses; don't force them through JSON.
+    const text = await res.text()
+    return text ? JSON.parse(text) : null
   } catch (err) {
     if (err.name === 'AbortError') {
       throw new ApiError(`Request to ${path} timed out`, { path, timedOut: true })
@@ -90,4 +98,16 @@ export function fetchMembers() {
 
 export function fetchImportantLinks() {
   return request('/api/important-links')
+}
+
+// Admin-editable content for one page, both languages in every text field.
+export function fetchPage(slug) {
+  return request(`/api/pages/${slug}`)
+}
+
+// Contact form. A 429 means the backend's rate limit kicked in, and a 400 means
+// the payload failed server-side validation — both reach the caller as an
+// ApiError carrying `status`, so the form can say which happened.
+export function submitContactMessage(payload) {
+  return request('/api/contact', { method: 'POST', body: payload })
 }

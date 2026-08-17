@@ -2,18 +2,21 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchNews } from '../api'
+import { localizeList } from '../cms'
 import NewsCard from './NewsCard.vue'
 import SkeletonBlock from './SkeletonBlock.vue'
 import WakingNotice from './WakingNotice.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const HOMEPAGE_LIMIT = 7
 
 const news = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-const visibleNews = computed(() => news.value.slice(0, HOMEPAGE_LIMIT))
+const visibleNews = computed(() =>
+  localizeList(news.value, locale.value).slice(0, HOMEPAGE_LIMIT)
+)
 const featuredNews = computed(() => visibleNews.value[0])
 const restNews = computed(() => visibleNews.value.slice(1))
 

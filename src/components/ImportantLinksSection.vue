@@ -1,18 +1,20 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchImportantLinks } from '../api'
+import { localizeList } from '../cms'
 import SkeletonBlock from './SkeletonBlock.vue'
 
-const { t } = useI18n()
-const links = ref([])
+const { t, locale } = useI18n()
+const rawLinks = ref([])
+const links = computed(() => localizeList(rawLinks.value, locale.value))
 const loading = ref(true)
 
 onMounted(async () => {
   try {
-    links.value = await fetchImportantLinks()
+    rawLinks.value = await fetchImportantLinks()
   } catch {
-    links.value = []
+    rawLinks.value = []
   } finally {
     loading.value = false
   }

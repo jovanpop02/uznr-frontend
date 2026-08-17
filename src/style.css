@@ -5,6 +5,11 @@
   --color-accent: #2f8f45;
   --color-accent-dark: #256e37;
 
+  /* Form validation only — the rest of the site is green, so an invalid field
+     has to fall outside the brand palette to read as an error at a glance. */
+  --color-danger: #c33a30;
+  --color-danger-light: #fdeceb;
+
   --color-ink: #17211c;
   --color-text: #45524c;
   --color-text-muted: #6b7a72;

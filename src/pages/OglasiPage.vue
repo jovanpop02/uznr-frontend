@@ -2,13 +2,15 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { fetchAnnouncements } from '../api'
+import { localizeList } from '../cms'
 import AnnouncementCard from '../components/AnnouncementCard.vue'
 import SkeletonBlock from '../components/SkeletonBlock.vue'
 import WakingNotice from '../components/WakingNotice.vue'
 import { splitExcerptForLink } from '../excerptLink'
 
-const { t } = useI18n()
-const announcements = ref([])
+const { t, locale } = useI18n()
+const rawAnnouncements = ref([])
+const announcements = computed(() => localizeList(rawAnnouncements.value, locale.value))
 const loading = ref(true)
 const error = ref(null)
 const selected = ref(null)
@@ -19,7 +21,7 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    announcements.value = await fetchAnnouncements()
+    rawAnnouncements.value = await fetchAnnouncements()
   } catch (e) {
     error.value = e.message
   } finally {

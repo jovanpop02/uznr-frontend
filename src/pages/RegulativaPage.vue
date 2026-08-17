@@ -2,10 +2,31 @@
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DocumentCard from '../components/DocumentCard.vue'
-import { bylawCategories, primaryLegislation } from '../data/regulativa'
+import {
+  bylawCategories as bundledCategories,
+  primaryLegislation as bundledPrimary,
+} from '../data/regulativa'
+import { text, toDocument, usePageSections, withFallback } from '../cms'
 import { isIOS } from '../platform'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Editable under Stranice → Regulativa. The first section holds the primary
+// legislation shown as cards; every later section becomes one collapsible
+// category of bylaws. The bundled lists stand in until the API answers.
+const sections = usePageSections('regulativa')
+
+const primaryLegislation = withFallback(sections, bundledPrimary, (cmsSections) =>
+  cmsSections[0].items.map((item) => toDocument(item, locale.value))
+)
+
+const bylawCategories = withFallback(sections, bundledCategories, (cmsSections) =>
+  cmsSections.slice(1).map((section) => ({
+    id: `section-${section.id}`,
+    title: text(section.heading, locale.value),
+    items: section.items.map((item) => toDocument(item, locale.value)),
+  }))
+)
 
 const heroBadges = computed(() => [
   {
@@ -28,18 +49,24 @@ const heroBadges = computed(() => [
 const searchText = ref('')
 const previewDoc = ref(null)
 
-const openCategories = reactive(
-  Object.fromEntries(bylawCategories.map((c) => [c.id, true]))
-)
+// Categories start open, so this only records the ones the visitor collapsed.
+// Keyed by id and defaulting to open matters now that the ids come from the
+// database: a category added in the admin must appear open like the rest, not
+// silently collapsed because nothing seeded an entry for it.
+const openCategories = reactive({})
+
+function isCategoryOpen(id) {
+  return openCategories[id] !== false
+}
 
 function toggleCategory(id) {
-  openCategories[id] = !openCategories[id]
+  openCategories[id] = !isCategoryOpen(id)
 }
 
 const filteredCategories = computed(() => {
   const q = searchText.value.trim().toLowerCase()
-  if (!q) return bylawCategories
-  return bylawCategories
+  if (!q) return bylawCategories.value
+  return bylawCategories.value
     .map((category) => ({
       ...category,
       items: category.items.filter(
@@ -149,7 +176,7 @@ function closePreview() {
             <span class="category__count">{{ category.items.length }}</span>
             <svg
               class="category__chevron"
-              :class="{ 'category__chevron--open': openCategories[category.id] || searchText }"
+              :class="{ 'category__chevron--open': isCategoryOpen(category.id) || searchText }"
               viewBox="0 0 24 24"
               width="18"
               height="18"
@@ -162,7 +189,7 @@ function closePreview() {
             </svg>
           </button>
 
-          <div v-show="openCategories[category.id] || searchText" class="bylaw-list">
+          <div v-show="isCategoryOpen(category.id) || searchText" class="bylaw-list">
             <div v-for="item in category.items" :key="item.file" class="bylaw-row">
               <span class="bylaw-row__body">
                 <span class="bylaw-row__title-row">
